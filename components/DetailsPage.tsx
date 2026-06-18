@@ -317,7 +317,7 @@ const DetailsPage: React.FC<DetailsPageProps> = ({ type }) => {
            </div>
         </div>
         
-        <BannerAd />
+        <BannerAd slot="detailsPageAd" />
 
         {/* Seasons & Episodes Section (Series Only) */}
         {item.type === MediaType.SERIES && item.seasons && item.seasons.length > 0 && (

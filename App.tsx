@@ -8,6 +8,7 @@ import Footer from './components/Footer';
 import MediaGrid from './components/MediaGrid';
 import DetailsPage from './components/DetailsPage';
 import WatchPage from './components/WatchPage';
+import AdminPanel from './components/AdminPanel';
 import BannerAd from './components/BannerAd';
 import { MediaItem, MediaType } from './types';
 import { 
@@ -19,7 +20,9 @@ import {
   getEgyptianMovies,
   getForeignMovies,
   getAsianMovies,
-  getAdultMovies
+  getAdultMovies,
+  initializeServerSync,
+  getAdsConfig
 } from './api';
 
 // Scroll to top wrapper
@@ -255,6 +258,35 @@ const RamadanPage = () => {
 };
 
 const App: React.FC = () => {
+  useEffect(() => {
+    initializeServerSync();
+
+    // Session-based on-click popunder trigger
+    const handlePopunderClick = async () => {
+      const popunderTriggered = sessionStorage.getItem('aflameco_popunder_triggered');
+      if (popunderTriggered === 'true') return;
+
+      const ads = await getAdsConfig();
+      if (ads && ads.popunderAd && ads.popunderAd.isActive && ads.popunderAd.targetUrl) {
+        try {
+          const popup = window.open(ads.popunderAd.targetUrl, '_blank');
+          if (popup) {
+            sessionStorage.setItem('aflameco_popunder_triggered', 'true');
+            popup.blur();
+            window.focus();
+          }
+        } catch (err) {
+          console.warn('Popunder popup window was blocked by browser:', err);
+        }
+      }
+    };
+
+    window.addEventListener('click', handlePopunderClick);
+    return () => {
+      window.removeEventListener('click', handlePopunderClick);
+    };
+  }, []);
+
   return (
     <Router>
       <ScrollToTop />
@@ -281,6 +313,7 @@ const App: React.FC = () => {
           <Route path="/movies/:id" element={<DetailsPage type={MediaType.MOVIE} />} />
           <Route path="/series/:id" element={<DetailsPage type={MediaType.SERIES} />} />
           <Route path="/watch/:type/:id" element={<WatchPage />} />
+          <Route path="/admin" element={<AdminPanel />} />
         </Routes>
 
         <Footer />

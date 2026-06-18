@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { Play, Download, Server, AlertCircle, ChevronRight, Shield, RefreshCw, Share2, X, Link as LinkIcon, Check } from 'lucide-react';
-import { getMediaDetails } from '../api';
+import { getMediaDetails, getCustomServers, CustomServersData } from '../api';
 import { MediaItem, MediaType } from '../types';
 import BannerAd from './BannerAd';
 
@@ -59,6 +59,7 @@ const WatchPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeServerId, setActiveServerId] = useState(1); // Default to VidSrc (ID: 1)
   const [refreshCount, setRefreshCount] = useState(0);
+  const [customServers, setCustomServers] = useState<CustomServersData | null>(null);
 
   // Share Modal State
   const [isShareOpen, setIsShareOpen] = useState(false);
@@ -70,6 +71,19 @@ const WatchPage: React.FC = () => {
   const seasonNumber = searchParams.get('season') || '1';
   const episodeNumber = searchParams.get('episode') || '1';
 
+  // Helper to determine the list of watch servers (prioritizing custom ones)
+  const getServersList = () => {
+    if (customServers && customServers.watch.length > 0) {
+      return customServers.watch.map((srv, idx) => ({
+        id: 100 + idx,
+        name: srv.name,
+        type: 'CUSTOM' as any,
+        url: srv.url
+      }));
+    }
+    return SERVERS;
+  };
+
   // Construct Download URL (Keep using URPlayer for downloads as it provides direct links)
   const downloadUrl = mediaType === MediaType.MOVIE
     ? `https://d.urplayer.xyz/movie/${id}?key=${API_TOKEN}`
@@ -77,8 +91,16 @@ const WatchPage: React.FC = () => {
 
   // Helper to determine the Embed URL based on active server
   const getEmbedUrl = () => {
-    const activeServer = SERVERS.find(s => s.id === activeServerId);
+    const servers = getServersList();
+    const activeServer = servers.find(s => s.id === activeServerId);
     
+    if (activeServer && 'url' in activeServer) {
+      // Replace {season} and {episode} values dynamically in template URLs
+      return activeServer.url
+        .replace(/{season}/g, seasonNumber)
+        .replace(/{episode}/g, episodeNumber);
+    }
+
     // VidSrc Logic (New Documentation)
     if (activeServer?.type === 'VIDSRC' || activeServer?.type === 'VIDSRC_BACKUP') {
        if (mediaType === MediaType.MOVIE) {
@@ -90,9 +112,9 @@ const WatchPage: React.FC = () => {
 
     // Default / VIP Logic (URPlayer / UpNShare)
     if (mediaType === MediaType.MOVIE) {
-      return `https://urplayer.xyz/embed/movie/${id}?key=${API_TOKEN}`;
+       return `https://urplayer.xyz/embed/movie/${id}?key=${API_TOKEN}`;
     } else {
-      return `https://urplayer.xyz/embed/tv/${id}/${seasonNumber}/${episodeNumber}?key=${API_TOKEN}`;
+       return `https://urplayer.xyz/embed/tv/${id}/${seasonNumber}/${episodeNumber}?key=${API_TOKEN}`;
     }
   };
 
@@ -110,6 +132,19 @@ const WatchPage: React.FC = () => {
     loadDetails();
     window.scrollTo(0, 0);
   }, [id, mediaType]);
+
+  useEffect(() => {
+    if (id) {
+      const typeStr = type === 'movie' ? 'movie' : 'series';
+      const srv = getCustomServers(typeStr, id, seasonNumber, episodeNumber);
+      setCustomServers(srv);
+      if (srv && srv.watch.length > 0) {
+        setActiveServerId(100);
+      } else {
+        setActiveServerId(1);
+      }
+    }
+  }, [id, type, seasonNumber, episodeNumber]);
 
   const handleServerChange = (serverId: number) => {
     setActiveServerId(serverId);
@@ -242,7 +277,7 @@ const WatchPage: React.FC = () => {
                   <Server size={18} />
                   <span className="text-sm font-medium whitespace-nowrap">سيرفرات المشاهدة:</span>
                 </div>
-                {SERVERS.map((server) => (
+                {getServersList().map((server) => (
                   <button
                     key={server.id}
                     onClick={() => handleServerChange(server.id)}
@@ -271,30 +306,52 @@ const WatchPage: React.FC = () => {
           </div>
         </div>
         
-        <BannerAd />
+        <BannerAd slot="watchPageAd" />
 
         {/* Download Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Download Iframe */}
+          {/* Download Component/Iframe */}
           <div className="lg:col-span-2 bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
             <div className="p-5 border-b border-white/10 flex items-center justify-between">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <Download className="text-brand-pink" size={20} />
-                روابط التحميل
+                روابط التحميل المباشرة والسريعة
               </h3>
               <span className="text-xs text-gray-400 bg-black/30 px-2 py-1 rounded flex items-center gap-1">
-                <Shield size={10} className="text-green-500" /> سيرفرات سريعة
+                <Shield size={10} className="text-green-500" /> سيرفرات آمنة
               </span>
             </div>
             
-            <div className="w-full h-[400px] bg-black/20">
-              <iframe
-                src={downloadUrl}
-                className="w-full h-full"
-                frameBorder="0"
-                title="Download Links"
-              ></iframe>
+            <div className="w-full bg-black/20 text-right">
+              {customServers && customServers.download && customServers.download.length > 0 ? (
+                <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {customServers.download.map((dl, idx) => (
+                    <a
+                      key={idx}
+                      href={dl.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between gap-3 p-4 bg-brand-pink/10 hover:bg-brand-pink/20 border border-brand-pink/25 rounded-xl transition-all cursor-pointer group text-right shadow-lg"
+                    >
+                      <div className="min-w-0">
+                        <span className="text-white font-bold block text-sm">{dl.name}</span>
+                        <span className="text-gray-400 text-[10px] truncate max-w-[200px] block font-mono dir-ltr text-left mt-0.5">{dl.url}</span>
+                      </div>
+                      <div className="w-10 h-10 rounded-lg bg-brand-pink text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                        <Download size={18} />
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <iframe
+                  src={downloadUrl}
+                  className="w-full h-[400px]"
+                  frameBorder="0"
+                  title="Download Links"
+                ></iframe>
+              )}
             </div>
           </div>
 

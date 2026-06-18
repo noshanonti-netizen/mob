@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Menu, X, Play, Monitor, Home, Zap, Star, Film, ChevronDown, Globe, Users } from 'lucide-react';
+import { Search, Menu, X, Play, Monitor, Home, Zap, Star, Film, ChevronDown, Globe, Users, Settings } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { searchContent } from '../api';
 import { MediaItem, MediaType } from '../types';
@@ -70,6 +70,7 @@ const Navbar: React.FC = () => {
     { name: 'أفلام', path: '/movies', icon: <Play size={18} /> },
     { name: 'مسلسلات', path: '/series', icon: <Monitor size={18} /> },
     { name: 'أفلام مصرية', path: '/egyptian', icon: <Film size={18} /> },
+    { name: 'لوحة التحكم', path: '/admin', icon: <Settings size={18} /> },
   ];
 
   const categoryLinks = [

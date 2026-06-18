@@ -48,6 +48,7 @@ export interface MediaItem {
   cast?: Actor[];
   similar?: MediaItem[];
   seasons?: Season[];
+  category?: string;
 }
 
 export interface SectionProps {

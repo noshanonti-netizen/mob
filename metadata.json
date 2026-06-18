@@ -1,6 +1,8 @@
 {
-  "name": "mob",
+  "name": "Aflamecoz - افلاميكوز",
   "description": "منصة افلاميكوز لمشاهدة أفلام ومسلسلات رمضان 2026 بجودة عالية وتصميم عصري. افلام للكبار فقط.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
