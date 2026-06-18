@@ -6,6 +6,11 @@ import MediaCard from './MediaCard';
 const MediaRow: React.FC<SectionProps> = ({ title, items }) => {
   const rowRef = useRef<HTMLDivElement>(null);
 
+  // If no items, do not render the section at all
+  if (!items || items.length === 0) {
+    return null;
+  }
+
   const slide = (direction: 'left' | 'right') => {
     if (rowRef.current) {
       const { scrollLeft, clientWidth } = rowRef.current;
@@ -15,7 +20,7 @@ const MediaRow: React.FC<SectionProps> = ({ title, items }) => {
   };
 
   return (
-    <div className="py-8 relative group/row">
+    <div className="py-8 relative group/row animate-fadeIn">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4 flex items-end justify-between">
         <h2 className="text-2xl md:text-3xl font-bold text-white relative z-10 border-r-4 border-brand-red pr-4">
           {title}
@@ -39,11 +44,7 @@ const MediaRow: React.FC<SectionProps> = ({ title, items }) => {
         </button>
 
         {/* Scroll Container with Mask Effect */}
-        <div 
-          className="relative w-full overflow-hidden"
-          // Adding the mask effect using pseudo-elements logic via standard classes isn't direct in Tailwind for 'mask-image' widely supported, 
-          // so we simulate the fade edges with absolute divs if needed, but here we keep it clean.
-        >
+        <div className="relative w-full overflow-hidden">
           {/* Fade overlays */}
           <div className="absolute top-0 right-0 w-12 h-full bg-gradient-to-l from-brand-darker to-transparent z-20 pointer-events-none" />
           <div className="absolute top-0 left-0 w-12 h-full bg-gradient-to-r from-brand-darker to-transparent z-20 pointer-events-none" />

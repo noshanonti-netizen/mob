@@ -57,6 +57,8 @@ export const searchContent = async (query: string): Promise<MediaItem[]> => {
     const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&language=ar-SA&query=${encodeURIComponent(query)}&page=1&include_adult=false`);
     const data = await res.json();
     
+    if (!data.results) return [];
+
     // Filter only movie and tv types
     const validResults = data.results.filter((item: any) => 
       (item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path
@@ -75,6 +77,7 @@ export const getTrendingMovies = async (page: number = 1): Promise<MediaItem[]> 
   try {
     const res = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}&language=ar-SA&page=${page}`);
     const data = await res.json();
+    if (!data.results) return [];
     return data.results.map((item: any) => mapResultToMediaItem(item, MediaType.MOVIE));
   } catch (e) {
     console.error('Error fetching trending movies:', e);
@@ -86,6 +89,7 @@ export const getTrendingSeries = async (): Promise<MediaItem[]> => {
   try {
     const res = await fetch(`${BASE_URL}/trending/tv/week?api_key=${API_KEY}&language=ar-SA`);
     const data = await res.json();
+    if (!data.results) return [];
     return data.results.map((item: any) => mapResultToMediaItem(item, MediaType.SERIES));
   } catch (e) {
     console.error('Error fetching trending series:', e);
@@ -97,6 +101,7 @@ export const getDiscoverSeries = async (page: number = 1): Promise<MediaItem[]> 
   try {
     const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&language=ar-SA&sort_by=popularity.desc&page=${page}`);
     const data = await res.json();
+    if (!data.results) return [];
     return data.results.map((item: any) => mapResultToMediaItem(item, MediaType.SERIES));
   } catch (e) {
     console.error('Error fetching discover series:', e);
@@ -106,8 +111,10 @@ export const getDiscoverSeries = async (page: number = 1): Promise<MediaItem[]> 
 
 export const getRamadanSeries = async (): Promise<MediaItem[]> => {
   try {
-    const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&language=ar-SA&with_original_language=ar&sort_by=first_air_date.desc&vote_count.gte=0`);
+    // Sorted by popularity to ensure we get visible results
+    const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&language=ar-SA&with_original_language=ar&sort_by=popularity.desc&page=1`);
     const data = await res.json();
+    if (!data.results) return [];
     const validResults = data.results.filter((item: any) => item.poster_path);
     return validResults.map((item: any) => mapResultToMediaItem(item, MediaType.SERIES));
   } catch (e) {
@@ -120,6 +127,7 @@ export const getTurkishSeries = async (page: number = 1): Promise<MediaItem[]> =
   try {
     const res = await fetch(`${BASE_URL}/discover/tv?api_key=${API_KEY}&language=ar-SA&with_origin_country=TR&sort_by=popularity.desc&page=${page}`);
     const data = await res.json();
+    if (!data.results) return [];
     return data.results.map((item: any) => mapResultToMediaItem(item, MediaType.SERIES));
   } catch (e) {
     console.error('Error fetching Turkish series:', e);
@@ -131,6 +139,7 @@ export const getActionMovies = async (page: number = 1): Promise<MediaItem[]> =>
   try {
     const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&language=ar-SA&with_genres=28&sort_by=popularity.desc&page=${page}`);
     const data = await res.json();
+    if (!data.results) return [];
     return data.results.map((item: any) => mapResultToMediaItem(item, MediaType.MOVIE));
   } catch (e) {
     return [];
@@ -143,6 +152,7 @@ export const getArabicMovies = async (page: number = 1): Promise<MediaItem[]> =>
   try {
     const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&language=ar-SA&with_original_language=ar&sort_by=release_date.desc&page=${page}`);
     const data = await res.json();
+    if (!data.results) return [];
     const validResults = data.results.filter((item: any) => item.poster_path);
     return validResults.map((item: any) => mapResultToMediaItem(item, MediaType.MOVIE));
   } catch (e) {
@@ -155,6 +165,7 @@ export const getEgyptianMovies = async (page: number = 1): Promise<MediaItem[]> 
     // Fetch Egyptian movies using country code EG (Egypt)
     const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&language=ar-SA&with_origin_country=EG&sort_by=release_date.desc&page=${page}`);
     const data = await res.json();
+    if (!data.results) return [];
     const validResults = data.results.filter((item: any) => item.poster_path);
     return validResults.map((item: any) => mapResultToMediaItem(item, MediaType.MOVIE));
   } catch (e) {
@@ -166,6 +177,7 @@ export const getForeignMovies = async (page: number = 1): Promise<MediaItem[]> =
   try {
     const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&language=ar-SA&with_original_language=en&sort_by=popularity.desc&page=${page}`);
     const data = await res.json();
+    if (!data.results) return [];
     return data.results.map((item: any) => mapResultToMediaItem(item, MediaType.MOVIE));
   } catch (e) {
     return [];
@@ -177,6 +189,7 @@ export const getAsianMovies = async (page: number = 1): Promise<MediaItem[]> => 
     // ko: Korean, ja: Japanese, zh: Chinese, hi: Hindi, th: Thai
     const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&language=ar-SA&with_original_language=ko|ja|zh|hi|th&sort_by=popularity.desc&page=${page}`);
     const data = await res.json();
+    if (!data.results) return [];
     return data.results.map((item: any) => mapResultToMediaItem(item, MediaType.MOVIE));
   } catch (e) {
     return [];
@@ -188,6 +201,7 @@ export const getAdultMovies = async (page: number = 1): Promise<MediaItem[]> => 
     // Fetches R-rated movies to act as the "Adults Only" section (Action/Horror/Thriller +18)
     const res = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&language=ar-SA&certification_country=US&certification=R&sort_by=popularity.desc&page=${page}`);
     const data = await res.json();
+    if (!data.results) return [];
     return data.results.map((item: any) => mapResultToMediaItem(item, MediaType.MOVIE));
   } catch (e) {
     return [];
@@ -201,6 +215,8 @@ export const getMediaDetails = async (id: number, type: MediaType): Promise<Medi
     const res = await fetch(`${BASE_URL}/${endpoint}/${id}?api_key=${API_KEY}&language=ar-SA&append_to_response=credits,similar`);
     const data = await res.json();
     
+    if (data.success === false) return null;
+
     const baseItem = mapResultToMediaItem(data, type);
     
     // Process cast

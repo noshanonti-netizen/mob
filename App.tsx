@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import MediaRow from './components/MediaRow';
@@ -13,9 +14,7 @@ import {
   getTrendingMovies, 
   getRamadanSeries, 
   getTurkishSeries, 
-  getTrendingSeries,
   getDiscoverSeries,
-  getActionMovies,
   getArabicMovies,
   getEgyptianMovies,
   getForeignMovies,
@@ -55,9 +54,14 @@ const PaginatedPage: React.FC<PaginatedPageProps> = ({ title, fetchData }) => {
     const load = async () => {
       setLoading(true);
       window.scrollTo(0, 0);
-      const data = await fetchData(currentPage);
-      setItems(data);
-      setLoading(false);
+      try {
+        const data = await fetchData(currentPage);
+        setItems(data);
+      } catch (error) {
+        console.error("Page load error:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, [currentPage, fetchData]);
@@ -129,10 +133,12 @@ const HomePage = () => {
   const [adultMovies, setAdultMovies] = useState<MediaItem[]>([]);
   
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setError(false);
         const [
           ramadan, 
           movies, 
@@ -160,11 +166,17 @@ const HomePage = () => {
         setAdultMovies(adult);
 
         // Set Hero Items (Top 8 movies)
-        if (movies.length > 0) {
+        if (movies && movies.length > 0) {
           setHeroItems(movies.slice(0, 8));
+        } else {
+          // If movies are empty, checking connection might be good
+          if (ramadan.length === 0 && turkish.length === 0) {
+             setError(true);
+          }
         }
       } catch (error) {
-        console.error("Failed to load data", error);
+        console.error("Failed to load home data", error);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -174,6 +186,27 @@ const HomePage = () => {
   }, []);
 
   if (loading) return <div className="pt-24"><Loading /></div>;
+
+  if (error || (!loading && heroItems.length === 0 && ramadanItems.length === 0)) {
+     return (
+        <div className="min-h-screen flex flex-col items-center justify-center text-center p-4 bg-brand-darker pt-24">
+            <div className="bg-white/5 p-8 rounded-2xl border border-white/10 max-w-md w-full">
+              <AlertCircle size={48} className="text-brand-red mb-4 mx-auto" />
+              <h2 className="text-2xl font-bold mb-2 text-white">عذراً، حدث خطأ في الاتصال</h2>
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                لم نتمكن من جلب الأفلام والمسلسلات. يرجى التحقق من اتصال الإنترنت أو المحاولة لاحقاً.
+              </p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-brand-red hover:bg-red-600 text-white font-bold transition-all shadow-lg shadow-brand-red/30"
+              >
+                <RefreshCw size={20} />
+                إعادة المحاولة
+              </button>
+            </div>
+        </div>
+     );
+  }
 
   return (
     <main>
@@ -198,9 +231,14 @@ const RamadanPage = () => {
 
   useEffect(() => {
     const load = async () => {
-      const data = await getRamadanSeries();
-      setItems(data);
-      setLoading(false);
+      try {
+        const data = await getRamadanSeries();
+        setItems(data);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, []);
