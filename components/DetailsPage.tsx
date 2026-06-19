@@ -5,6 +5,7 @@ import { MediaItem, MediaType, Episode } from '../types';
 import { getMediaDetails, getSeasonEpisodes } from '../api';
 import MediaRow from './MediaRow';
 import BannerAd from './BannerAd';
+import SEO from './SEO';
 
 interface DetailsPageProps {
   type: MediaType;
