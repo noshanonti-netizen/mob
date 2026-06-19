@@ -9,10 +9,8 @@ import BannerAd from './BannerAd';
 const API_TOKEN = 'daab58b91dd26081ea83a8e1';
 
 const SERVERS = [
-  { id: 1, name: 'سيرفر أساسي (VidSrc)', type: 'VIDSRC' },
-  { id: 2, name: 'سيرفر VIP (MultiEmbed)', type: 'MULTIEMBED' },
-  { id: 3, name: 'سيرفر GoDrivePlayer', type: 'GODRIVE' },
-  { id: 4, name: 'سيرفر احتياطي', type: 'VIDSRC_BACKUP' },
+  { id: 1, name: 'سيرفر VIP (MultiEmbed)', type: 'MULTIEMBED' },
+  { id: 2, name: 'سيرفر GoDrivePlayer', type: 'GODRIVE' },
 ];
 
 // Custom Social Icons
