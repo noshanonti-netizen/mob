@@ -10,8 +10,9 @@ const API_TOKEN = 'daab58b91dd26081ea83a8e1';
 
 const SERVERS = [
   { id: 1, name: 'سيرفر أساسي (VidSrc)', type: 'VIDSRC' },
-  { id: 2, name: 'سيرفر VIP (UpNShare)', type: 'VIP' },
-  { id: 3, name: 'سيرفر احتياطي', type: 'VIDSRC_BACKUP' },
+  { id: 2, name: 'سيرفر VIP (MultiEmbed)', type: 'MULTIEMBED' },
+  { id: 3, name: 'سيرفر GoDrivePlayer', type: 'GODRIVE' },
+  { id: 4, name: 'سيرفر احتياطي', type: 'VIDSRC_BACKUP' },
 ];
 
 // Custom Social Icons
@@ -102,11 +103,39 @@ const WatchPage: React.FC = () => {
     }
 
     // VidSrc Logic (New Documentation)
-    if (activeServer?.type === 'VIDSRC' || activeServer?.type === 'VIDSRC_BACKUP') {
+    if (activeServer?.type === 'VIDSRC') {
        if (mediaType === MediaType.MOVIE) {
-         return `https://vidsrc-embed.ru/embed/movie?tmdb=${id}`;
+         return `https://vidsrc.xyz/embed/movie?tmdb=${id}`;
        } else {
-         return `https://vidsrc-embed.ru/embed/tv?tmdb=${id}&season=${seasonNumber}&episode=${episodeNumber}`;
+         return `https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${seasonNumber}&episode=${episodeNumber}`;
+       }
+    }
+
+    if (activeServer?.type === 'VIDSRC_BACKUP') {
+       if (mediaType === MediaType.MOVIE) {
+         return `https://vidsrc.in/embed/movie?tmdb=${id}`;
+       } else {
+         return `https://vidsrc.in/embed/tv?tmdb=${id}&season=${seasonNumber}&episode=${episodeNumber}`;
+       }
+    }
+
+    // MultiEmbed Server Selection
+    if (activeServer?.type === 'MULTIEMBED') {
+       const videoId = item?.imdb_id || id;
+       const tmdbParam = item?.imdb_id ? '' : '&tmdb=1';
+       if (mediaType === MediaType.MOVIE) {
+         return `https://multiembed.mov/?video_id=${videoId}${tmdbParam}`;
+       } else {
+         return `https://multiembed.mov/?video_id=${videoId}${tmdbParam}&s=${seasonNumber}&e=${episodeNumber}`;
+       }
+    }
+
+    // GoDrivePlayer Server Selection
+    if (activeServer?.type === 'GODRIVE') {
+       if (mediaType === MediaType.MOVIE) {
+         return `https://godriveplayer.space/player.php?imdb=${item?.imdb_id || id}`;
+       } else {
+         return `https://godriveplayer.space/player.php?type=series&tmdb=${id}&season=${seasonNumber}&episode=${episodeNumber}`;
        }
     }
 

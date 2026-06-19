@@ -447,7 +447,7 @@ export const getMediaDetails = async (id: number, type: MediaType): Promise<Medi
 
   try {
     const endpoint = type === MediaType.MOVIE ? 'movie' : 'tv';
-    const res = await fetch(`${BASE_URL}/${endpoint}/${id}?api_key=${API_KEY}&language=ar-SA&append_to_response=credits,similar`);
+    const res = await fetch(`${BASE_URL}/${endpoint}/${id}?api_key=${API_KEY}&language=ar-SA&append_to_response=credits,similar,external_ids`);
     const data = await res.json();
     
     if (data.success === false) return null;
@@ -483,7 +483,8 @@ export const getMediaDetails = async (id: number, type: MediaType): Promise<Medi
       duration: type === MediaType.MOVIE ? `${data.runtime} دقيقة` : `${data.number_of_seasons} مواسم`,
       cast,
       similar,
-      seasons
+      seasons,
+      imdb_id: data.external_ids?.imdb_id || data.imdb_id || undefined
     };
   } catch (e) {
     console.error('Error fetching details:', e);

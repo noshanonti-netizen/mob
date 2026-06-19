@@ -49,6 +49,7 @@ export interface MediaItem {
   similar?: MediaItem[];
   seasons?: Season[];
   category?: string;
+  imdb_id?: string;
 }
 
 export interface SectionProps {
