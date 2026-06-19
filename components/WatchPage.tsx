@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { Play, Download, Server, AlertCircle, ChevronRight, Shield, RefreshCw, Share2, X, Link as LinkIcon, Check } from 'lucide-react';
+import { Play, Download, Server, AlertCircle, ChevronRight, Shield, RefreshCw, Share2, X, Link as LinkIcon, Check, Edit3 } from 'lucide-react';
 import { getMediaDetails, getCustomServers, CustomServersData } from '../api';
 import { MediaItem, MediaType } from '../types';
 import BannerAd from './BannerAd';
@@ -245,13 +245,25 @@ const WatchPage: React.FC = () => {
             </h1>
           </div>
           
-          <button 
-            onClick={() => setIsShareOpen(true)}
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-medium transition-colors border border-white/10"
-          >
-            <Share2 size={18} />
-            مشاركة العرض
-          </button>
+          <div className="flex gap-2">
+            {sessionStorage.getItem('aflameco_admin_auth') === 'true' && (
+              <Link 
+                to={`/admin?editId=${item.id}&type=${type}${mediaType === MediaType.SERIES ? `&season=${seasonNumber}&episode=${episodeNumber}` : ''}`}
+                className="flex items-center gap-2 bg-brand-pink/20 hover:bg-brand-pink text-white px-4 py-2 rounded-lg font-medium transition-colors border border-brand-pink/30 hover:border-transparent"
+                title="تعديل هذا العمل الفني وتغيير سيرفرات عرضه في لوحة التحكم"
+              >
+                <Edit3 size={16} />
+                تعديل العمل وروابطه
+              </Link>
+            )}
+            <button 
+              onClick={() => setIsShareOpen(true)}
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-medium transition-colors border border-white/10"
+            >
+              <Share2 size={18} />
+              مشاركة العرض
+            </button>
+          </div>
         </div>
 
         {/* Video Player Container */}

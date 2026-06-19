@@ -102,6 +102,27 @@ app.get("/api/ads", (req, res) => {
       targetUrl: "",
       isActive: true,
     },
+    homePageAd: {
+      type: "script",
+      code: `<script>\n  atOptions = {\n    'key' : '239fe64e711b8fc71eec9f72aa735b94',\n    'format' : 'iframe',\n    'height' : 250,\n    'width' : 300,\n    'params' : {}\n  };\n</script>\n<script src="https://www.highperformanceformat.com/239fe64e711b8fc71eec9f72aa735b94/invoke.js"></script>`,
+      imageUrl: "",
+      targetUrl: "",
+      isActive: true,
+    },
+    sidebarAd: {
+      type: "script",
+      code: `<script>\n  atOptions = {\n    'key' : '239fe64e711b8fc71eec9f72aa735b94',\n    'format' : 'iframe',\n    'height' : 250,\n    'width' : 300,\n    'params' : {}\n  };\n</script>\n<script src="https://www.highperformanceformat.com/239fe64e711b8fc71eec9f72aa735b94/invoke.js"></script>`,
+      imageUrl: "",
+      targetUrl: "",
+      isActive: false,
+    },
+    footerAd: {
+      type: "script",
+      code: `<script>\n  atOptions = {\n    'key' : '239fe64e711b8fc71eec9f72aa735b94',\n    'format' : 'iframe',\n    'height' : 250,\n    'width' : 300,\n    'params' : {}\n  };\n</script>\n<script src="https://www.highperformanceformat.com/239fe64e711b8fc71eec9f72aa735b94/invoke.js"></script>`,
+      imageUrl: "",
+      targetUrl: "",
+      isActive: true,
+    },
     popunderAd: {
       type: "link",
       code: "",

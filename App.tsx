@@ -219,7 +219,7 @@ const HomePage = () => {
         <MediaRow title="مسلسلات رمضان والعربية الحديثة" items={ramadanItems} />
         <MediaRow title="أفلام عربية" items={arabicMovies} />
         <MediaRow title="أفلام أجنبية" items={foreignMovies} />
-        <BannerAd />
+        <BannerAd slot="homePageAd" />
         <MediaRow title="أفلام آسيوية" items={asianMovies} />
         <MediaRow title="أفلام للكبار فقط (+18)" items={adultMovies} />
         <MediaRow title="الدراما التركية" items={turkishSeries} />

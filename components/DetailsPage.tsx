@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Play, Star, Calendar, Clock, Share2, Download, User, Layers, Info, X, Link as LinkIcon, Check } from 'lucide-react';
+import { Play, Star, Calendar, Clock, Share2, Download, User, Layers, Info, X, Link as LinkIcon, Check, Edit3, Settings } from 'lucide-react';
 import { MediaItem, MediaType, Episode } from '../types';
 import { getMediaDetails, getSeasonEpisodes } from '../api';
 import MediaRow from './MediaRow';
@@ -236,6 +236,16 @@ const DetailsPage: React.FC<DetailsPageProps> = ({ type }) => {
                   >
                     <Share2 size={20} />
                   </button>
+                  {sessionStorage.getItem('aflameco_admin_auth') === 'true' && (
+                    <Link 
+                      to={`/admin?editId=${item.id}&type=${type}`}
+                      className="flex items-center gap-2 bg-brand-pink/20 hover:bg-brand-pink border border-brand-pink/50 text-brand-pink hover:text-white px-6 py-3.5 rounded-xl font-bold transition-all"
+                      title="تعديل تفاصيل العمل وسيرفرات البث"
+                    >
+                      <Edit3 size={18} />
+                      تعديل العمل وروابطه
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

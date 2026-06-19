@@ -25,6 +25,9 @@ export interface AdsConfigData {
   watchPageAd: AdPlaceConfig;
   detailsPageAd: AdPlaceConfig;
   popunderAd: AdPlaceConfig;
+  homePageAd?: AdPlaceConfig;
+  sidebarAd?: AdPlaceConfig;
+  footerAd?: AdPlaceConfig;
 }
 
 // Background sync POST helper

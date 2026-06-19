@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   Plus, Edit2, Trash2, Save, Download, Upload, ShieldAlert, Key, 
   Film, Tv, Server, Database, PlusCircle, CheckCircle, AlertTriangle, 
@@ -10,10 +11,12 @@ import {
   saveCustomMediaItems, 
   getCustomServers, 
   saveCustomServers, 
+  getMediaDetails,
   CustomServersData,
   AdsConfigData,
   getAdsConfig,
-  saveAdsConfig
+  saveAdsConfig,
+  searchContent
 } from '../api';
 
 const PRESET_CATEGORIES = [
@@ -43,6 +46,12 @@ const AdminPanel: React.FC = () => {
   // Custom Media List
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
   
+  // Search state variables
+  const [localSearchQuery, setLocalSearchQuery] = useState('');
+  const [tmdbSearchQuery, setTmdbSearchQuery] = useState('');
+  const [tmdbSearchResults, setTmdbSearchResults] = useState<MediaItem[]>([]);
+  const [isSearchingTmdb, setIsSearchingTmdb] = useState(false);
+  
   // Media Form State
   const [editingMediaId, setEditingMediaId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
@@ -71,6 +80,16 @@ const AdminPanel: React.FC = () => {
     rating: 8.5
   });
 
+  // Unified media form watch/download links state
+  const [mediaWatchServers, setMediaWatchServers] = useState<Array<{ name: string, url: string }>>([]);
+  const [mediaDownloadServers, setMediaDownloadServers] = useState<Array<{ name: string, url: string }>>([]);
+  
+  // Temporary inputs inside the primary media editing form
+  const [mediaNewWatchName, setMediaNewWatchName] = useState('');
+  const [mediaNewWatchUrl, setMediaNewWatchUrl] = useState('');
+  const [mediaNewDownloadName, setMediaNewDownloadName] = useState('');
+  const [mediaNewDownloadUrl, setMediaNewDownloadUrl] = useState('');
+
   // Custom Servers Form State
   const [selectedServerMediaId, setSelectedServerMediaId] = useState<string>(''); // Can be TMDB ID or custom ID
   const [selectedServerMediaType, setSelectedServerMediaType] = useState<MediaType>(MediaType.MOVIE);
@@ -92,6 +111,8 @@ const AdminPanel: React.FC = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
+  const [searchParams] = useSearchParams();
+
   useEffect(() => {
     // Check if user was already logged in
     const authStatus = sessionStorage.getItem('aflameco_admin_auth');
@@ -99,7 +120,8 @@ const AdminPanel: React.FC = () => {
       setIsAuthenticated(true);
     }
     // Load custom media
-    setMediaList(getCustomMediaItems());
+    const localItems = getCustomMediaItems();
+    setMediaList(localItems);
     
     // Load ads config from server / localStorage
     getAdsConfig().then(data => {
@@ -107,7 +129,60 @@ const AdminPanel: React.FC = () => {
         setAdsData(data);
       }
     });
-  }, []);
+
+    // Check query params for deep-link editing
+    const editIdStr = searchParams.get('editId');
+    const editTypeStr = searchParams.get('type') as MediaType | null;
+    const sNumStr = searchParams.get('season');
+    const eNumStr = searchParams.get('episode');
+
+    if (editIdStr && editTypeStr) {
+      const editId = parseInt(editIdStr);
+      // Wait a moment for auth and lists to be ready, then trigger load
+      setTimeout(async () => {
+        // Try local list first
+        const foundLocal = localItems.find(item => item.id === editId);
+        if (foundLocal) {
+          handleEditMedia(foundLocal);
+          if (sNumStr && eNumStr) {
+            setSelectedServerMediaId(String(editId));
+            setSelectedServerMediaType(editTypeStr);
+            setIsSpecificEpisode(true);
+            setServerSeasonNumber(Number(sNumStr));
+            setServerEpisodeNumber(Number(eNumStr));
+            // Trigger load in servers tab too if they switch
+            const srv = getCustomServers(editTypeStr === MediaType.MOVIE ? 'movie' : 'series', editId, sNumStr, eNumStr);
+            if (srv) {
+              setMediaWatchServers(srv.watch || []);
+              setMediaDownloadServers(srv.download || []);
+            }
+          }
+        } else {
+          // If not custom, import details from TMDB to edit/override it
+          try {
+            const tmdbItem = await getMediaDetails(editId, editTypeStr);
+            if (tmdbItem) {
+              handleEditTmdbItem(tmdbItem);
+              if (sNumStr && eNumStr) {
+                setSelectedServerMediaId(String(editId));
+                setSelectedServerMediaType(editTypeStr);
+                setIsSpecificEpisode(true);
+                setServerSeasonNumber(Number(sNumStr));
+                setServerEpisodeNumber(Number(eNumStr));
+                const srv = getCustomServers(editTypeStr === MediaType.MOVIE ? 'movie' : 'series', editId, sNumStr, eNumStr);
+                if (srv) {
+                  setMediaWatchServers(srv.watch || []);
+                  setMediaDownloadServers(srv.download || []);
+                }
+              }
+            }
+          } catch (e) {
+            console.error('Failed to import deep linked item:', e);
+          }
+        }
+      }, 400);
+    }
+  }, [searchParams]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,6 +265,14 @@ const AdminPanel: React.FC = () => {
 
     saveCustomMediaItems(updatedList);
     setMediaList(updatedList);
+
+    // Save servers of this media
+    const serversObj: CustomServersData = {
+      watch: mediaWatchServers,
+      download: mediaDownloadServers
+    };
+    saveCustomServers(newItem.type === MediaType.MOVIE ? 'movie' : 'series', newItem.id, serversObj);
+
     resetMediaForm();
   };
 
@@ -213,6 +296,16 @@ const AdminPanel: React.FC = () => {
     } else {
       setCustomEpisodes([]);
     }
+
+    const srv = getCustomServers(item.type === MediaType.MOVIE ? 'movie' : 'series', item.id);
+    if (srv) {
+      setMediaWatchServers(srv.watch || []);
+      setMediaDownloadServers(srv.download || []);
+    } else {
+      setMediaWatchServers([]);
+      setMediaDownloadServers([]);
+    }
+
     window.scrollTo({ top: 300, behavior: 'smooth' });
   };
 
@@ -223,6 +316,51 @@ const AdminPanel: React.FC = () => {
       setMediaList(updatedList);
       showSuccess('تم حذف العمل بنجاح!');
     }
+  };
+
+  const handleTmdbSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tmdbSearchQuery.trim()) return;
+    setIsSearchingTmdb(true);
+    try {
+      const results = await searchContent(tmdbSearchQuery);
+      setTmdbSearchResults(results);
+    } catch (err) {
+      console.error('Failed search in TMDB:', err);
+      showError('فشل البحث في سيرفرات TMDB العالمية.');
+    } finally {
+      setIsSearchingTmdb(false);
+    }
+  };
+
+  const handleEditTmdbItem = (item: MediaItem) => {
+    setEditingMediaId(item.id);
+    setFormData({
+      title: item.title,
+      type: item.type,
+      year: item.year,
+      rating: item.rating,
+      quality: item.quality || 'HD',
+      image: item.image,
+      backdrop: item.backdrop || item.image,
+      description: item.description,
+      tags: item.tags ? item.tags.join(', ') : 'جديد',
+      duration: item.duration || '120 دقيقة',
+      category: item.category || 'ramadan'
+    });
+    setCustomEpisodes(item.seasons ? [] : []);
+
+    const srv = getCustomServers(item.type === MediaType.MOVIE ? 'movie' : 'series', item.id);
+    if (srv) {
+      setMediaWatchServers(srv.watch || []);
+      setMediaDownloadServers(srv.download || []);
+    } else {
+      setMediaWatchServers([]);
+      setMediaDownloadServers([]);
+    }
+
+    showSuccess(`تم استيراد بيانات "${item.title}" في حقول الاستمارة بالأسفل للتعديل عليها أو تغيير محتواها وتخزينها محلياً.`);
+    window.scrollTo({ top: 300, behavior: 'smooth' });
   };
 
   const resetMediaForm = () => {
@@ -241,6 +379,12 @@ const AdminPanel: React.FC = () => {
       category: 'ramadan'
     });
     setCustomEpisodes([]);
+    setMediaWatchServers([]);
+    setMediaDownloadServers([]);
+    setMediaNewWatchName('');
+    setMediaNewWatchUrl('');
+    setMediaNewDownloadName('');
+    setMediaNewDownloadUrl('');
   };
 
   // Episode Add Helper
@@ -813,6 +957,163 @@ const AdminPanel: React.FC = () => {
                   </div>
                 )}
 
+                {/* Embedded Links / Servers Editor */}
+                <div className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-4">
+                  <h4 className="text-white font-bold flex items-center gap-2 border-b border-white/5 pb-2 text-right justify-start">
+                    <Server size={18} className="text-brand-pink" />
+                    سيرفرات التشغيل وروابط التحميل السريعة لـ {formData.title || 'هذا العمل'} (اختياري)
+                  </h4>
+                  <p className="text-xs text-gray-400 leading-relaxed text-right">
+                    يمكنك إدخال وتعديل السيرفرات المخصصة للبث والمشاهدة وروابط التحميل المباشرة التابعة لهذا العمل مباشرة من هنا لتوفير الخطوات على زوارك!
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* 1. WATCH SERVERS CONTAINER */}
+                    <div className="space-y-4">
+                      <h5 className="text-white font-semibold text-xs border-b border-white/5 pb-1">سيرفرات البث والمشاهدة</h5>
+                      
+                      <div className="p-3 bg-black/25 border border-white/5 rounded-xl space-y-2">
+                        <div className="grid grid-cols-3 gap-2">
+                          <input 
+                            type="text"
+                            placeholder="اسم السيرفر"
+                            value={mediaNewWatchName}
+                            onChange={(e) => setMediaNewWatchName(e.target.value)}
+                            className="w-full bg-brand-darker border border-white/10 rounded-lg py-2 px-2.5 text-white text-xs text-right"
+                          />
+                          <input 
+                            type="url"
+                            placeholder="رابط مشغل iframe"
+                            value={mediaNewWatchUrl}
+                            onChange={(e) => setMediaNewWatchUrl(e.target.value)}
+                            className="w-full bg-brand-darker border border-white/10 rounded-lg py-2 px-2.5 text-white text-xs font-mono col-span-2 text-left dir-ltr"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!mediaNewWatchName || !mediaNewWatchUrl) {
+                              showError('يرجى ملء اسم السيرفر ورابطه للبث');
+                              return;
+                            }
+                            setMediaWatchServers([...mediaWatchServers, { name: mediaNewWatchName, url: mediaNewWatchUrl }]);
+                            setMediaNewWatchName('');
+                            setMediaNewWatchUrl('');
+                          }}
+                          className="w-full bg-brand-pink/20 hover:bg-brand-pink/30 text-brand-pink text-[11px] font-bold py-1.5 rounded-lg border border-brand-pink/20 transition-colors"
+                        >
+                          + إضافة سيرفر بث للمسودة
+                        </button>
+                      </div>
+
+                      {mediaWatchServers.length > 0 ? (
+                        <div className="border border-white/5 rounded-xl overflow-hidden bg-black/10 max-h-[140px] overflow-y-auto">
+                          <table className="w-full text-right text-xs">
+                            <thead className="bg-black/50 text-gray-400">
+                              <tr>
+                                <th className="p-2 border-b border-white/5">المخدم</th>
+                                <th className="p-2 border-b border-white/5 text-left dir-ltr max-w-[120px] truncate">الرابط المباشر</th>
+                                <th className="p-2 border-b border-white/5 text-center">أكشن</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {mediaWatchServers.map((server, idx) => (
+                                <tr key={idx} className="border-b border-white/5 hover:bg-white/5">
+                                  <td className="p-2 font-bold text-white">{server.name}</td>
+                                  <td className="p-2 text-left font-mono text-gray-400 max-w-[120px] truncate dir-ltr">{server.url}</td>
+                                  <td className="p-2 text-center">
+                                    <button 
+                                      type="button"
+                                      onClick={() => setMediaWatchServers(mediaWatchServers.filter((_, i) => i !== idx))}
+                                      className="text-brand-red hover:text-red-400 px-1 py-0.5 rounded"
+                                    >
+                                      حذف
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 text-[11px] text-center p-2 border border-dashed border-white/5 rounded-xl">لا توجد سيرفرات بث مضافة لمسودة هذا العمل بعد.</p>
+                      )}
+                    </div>
+
+                    {/* 2. DOWNLOAD SERVERS CONTAINER */}
+                    <div className="space-y-4">
+                      <h5 className="text-white font-semibold text-xs border-b border-white/5 pb-1">روابط التحميل المباشرة</h5>
+                      
+                      <div className="p-3 bg-black/25 border border-white/5 rounded-xl space-y-2">
+                        <div className="grid grid-cols-3 gap-2">
+                          <input 
+                            type="text"
+                            placeholder="اسم الجودة"
+                            value={mediaNewDownloadName}
+                            onChange={(e) => setMediaNewDownloadName(e.target.value)}
+                            className="w-full bg-brand-darker border border-white/10 rounded-lg py-2 px-2.5 text-white text-xs text-right"
+                          />
+                          <input 
+                            type="url"
+                            placeholder="رابط التحميل المباشر"
+                            value={mediaNewDownloadUrl}
+                            onChange={(e) => setMediaNewDownloadUrl(e.target.value)}
+                            className="w-full bg-brand-darker border border-white/10 rounded-lg py-2 px-2.5 text-white text-xs font-mono col-span-2 text-left dir-ltr"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!mediaNewDownloadName || !mediaNewDownloadUrl) {
+                              showError('يرجى ملء اسم الجودة أو السيرفر ورابطه البرمجي للتحميل');
+                              return;
+                            }
+                            setMediaDownloadServers([...mediaDownloadServers, { name: mediaNewDownloadName, url: mediaNewDownloadUrl }]);
+                            setMediaNewDownloadName('');
+                            setMediaNewDownloadUrl('');
+                          }}
+                          className="w-full bg-brand-pink/20 hover:bg-brand-pink/30 text-brand-pink text-[11px] font-bold py-1.5 rounded-lg border border-brand-pink/20 transition-colors"
+                        >
+                          + إضافة رابط تحميل للمسودة
+                        </button>
+                      </div>
+
+                      {mediaDownloadServers.length > 0 ? (
+                        <div className="border border-white/5 rounded-xl overflow-hidden bg-black/10 max-h-[140px] overflow-y-auto">
+                          <table className="w-full text-right text-xs">
+                            <thead className="bg-black/50 text-gray-400">
+                              <tr>
+                                <th className="p-2 border-b border-white/5">المنصة/الجودة</th>
+                                <th className="p-2 border-b border-white/5 text-left dir-ltr max-w-[120px] truncate">الرابط</th>
+                                <th className="p-2 border-b border-white/5 text-center">أكشن</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {mediaDownloadServers.map((server, idx) => (
+                                <tr key={idx} className="border-b border-white/5 hover:bg-white/5">
+                                  <td className="p-2 font-bold text-white">{server.name}</td>
+                                  <td className="p-2 text-left font-mono text-gray-400 max-w-[120px] truncate dir-ltr">{server.url}</td>
+                                  <td className="p-2 text-center">
+                                    <button 
+                                      type="button"
+                                      onClick={() => setMediaDownloadServers(mediaDownloadServers.filter((_, i) => i !== idx))}
+                                      className="text-brand-red hover:text-red-400 px-1 py-0.5 rounded"
+                                    >
+                                      حذف
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 text-[11px] text-center p-2 border border-dashed border-white/5 rounded-xl">لا توجد روابط تحميل مضافة للعمل بعد.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex gap-4 pt-3 border-t border-white/5">
                   <button 
                     type="submit"
@@ -837,32 +1138,102 @@ const AdminPanel: React.FC = () => {
 
             {/* List Column */}
             <div className="space-y-6">
+              {/* TMDB GLOBAL SEARCH AND OVERRIDE */}
               <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                  <Database className="text-brand-pink" size={18} />
-                  الأعمال المحلية المضافة يدوياً ({mediaList.length})
+                <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2 text-right justify-start">
+                  <Layers className="text-brand-pink" size={18} />
+                  البحث في TMDb لتعديل/تجاوز أي فيلم
                 </h3>
+                <p className="text-xs text-gray-400 mb-4 text-right">
+                  ابحث عن أي فيلم أو مسلسل عالمي في قاعدة بيانات TMDB، ثم اضغط "استيراد للتعديل" لاستدعاء بياناته وتعديل قصته أو بوستره أو حفظه كبديل محلي مخصص!
+                </p>
                 
-                {mediaList.length > 0 ? (
-                  <div className="space-y-3 max-h-[80vh] overflow-y-auto scrollbar-hide">
-                    {mediaList.map((item) => (
-                      <div key={item.id} className="bg-black/30 p-3 rounded-xl border border-white/5 flex gap-3 p-2.5 items-center hover:border-brand-pink/30 transition-all">
-                        <div className="w-12 h-16 rounded overflow-hidden flex-shrink-0 bg-gray-900 border border-white/10">
-                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                <form onSubmit={handleTmdbSearch} className="flex gap-2 mb-4">
+                  <button
+                    type="submit"
+                    disabled={isSearchingTmdb}
+                    className="px-4 py-2 rounded-xl bg-brand-pink text-white text-xs font-bold hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center min-w-[70px]"
+                  >
+                    {isSearchingTmdb ? 'جاري...' : 'بحث'}
+                  </button>
+                  <input 
+                    type="text"
+                    placeholder="ابحث بالاسم (مثال: John Wick, الفار الطباخ...)"
+                    value={tmdbSearchQuery}
+                    onChange={(e) => setTmdbSearchQuery(e.target.value)}
+                    className="flex-1 bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-white text-xs focus:outline-none focus:border-brand-pink text-right"
+                  />
+                </form>
+
+                {tmdbSearchResults.length > 0 ? (
+                  <div className="space-y-3 max-h-[350px] overflow-y-auto scrollbar-hide border-t border-white/5 pt-3">
+                    {tmdbSearchResults.map((item) => (
+                      <div key={item.id} className="bg-black/30 p-2.5 rounded-xl border border-white/5 flex gap-3 items-center hover:border-brand-pink/30 transition-all text-right">
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button 
+                            type="button"
+                            onClick={() => handleEditTmdbItem(item)}
+                            className="p-1 px-2.5 rounded bg-brand-pink/15 border border-brand-pink/30 text-brand-pink hover:bg-brand-pink hover:text-white transition-all text-[10px] flex items-center gap-1"
+                          >
+                            <Edit2 size={10} />
+                            استيراد للتعديل
+                          </button>
                         </div>
                         <div className="flex-1 min-w-0 text-right">
-                          <h4 className="text-white text-sm font-bold truncate leading-tight">{item.title}</h4>
-                          <span className="text-[10px] text-gray-500 font-mono">رقم التعريف: {item.id}</span>
-                          <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5">
-                            <span className="text-brand-pink font-bold">{item.type === MediaType.MOVIE ? 'فيلم' : 'مسلسل'}</span>
+                          <h4 className="text-white text-xs font-bold truncate leading-tight">{item.title}</h4>
+                          <span className="text-[10px] text-gray-500 font-mono">TMDb ID: {item.id}</span>
+                          <div className="flex items-center gap-1.5 justify-end text-[10px] text-gray-400 mt-0.5">
+                            <span className="text-yellow-500 font-bold">{item.rating} ★</span>
                             <span className="w-1 h-1 rounded-full bg-gray-700" />
                             <span>{item.year}</span>
                             <span className="w-1 h-1 rounded-full bg-gray-700" />
-                            <span className="text-yellow-500 font-bold">{item.rating}</span>
+                            <span className="text-brand-pink font-bold">{item.type === MediaType.MOVIE ? 'فيلم' : 'مسلسل'}</span>
                           </div>
                         </div>
+                        <div className="w-10 h-14 rounded overflow-hidden flex-shrink-0 bg-gray-900 border border-white/10">
+                          {item.image ? (
+                            <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500 font-mono text-[9px]">NO IMG</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  tmdbSearchQuery && !isSearchingTmdb && (
+                    <p className="text-gray-500 text-xs text-center">لا توجد نتائج بحث من TMDB حالياً.</p>
+                  )
+                )}
+              </div>
+
+              {/* LOCAL CUSTOM MANUALLY ADDED MEDIA */}
+              <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
+                <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2 justify-start text-right">
+                  <Database className="text-brand-pink" size={18} />
+                  الأعمال المحلية والمعدلة يدوياً ({mediaList.length})
+                </h3>
+                
+                <div className="mb-4">
+                  <input 
+                    type="text"
+                    placeholder="ابحث بالاسم أو بمعرف التعريف..."
+                    value={localSearchQuery}
+                    onChange={(e) => setLocalSearchQuery(e.target.value)}
+                    className="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-white text-xs focus:outline-none focus:border-brand-pink text-right"
+                  />
+                </div>
+
+                {mediaList.length > 0 ? (
+                  <div className="space-y-3 max-h-[450px] overflow-y-auto scrollbar-hide">
+                    {(localSearchQuery.trim() !== '' 
+                      ? mediaList.filter(item => item.title.toLowerCase().includes(localSearchQuery.toLowerCase()) || String(item.id).includes(localSearchQuery)) 
+                      : mediaList
+                    ).map((item) => (
+                      <div key={item.id} className="bg-black/30 p-2.5 rounded-xl border border-white/5 flex gap-3 items-center hover:border-brand-pink/30 transition-all text-right">
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <button 
+                            type="button"
                             onClick={() => handleEditMedia(item)}
                             className="p-1 px-2.5 rounded bg-white/5 border border-white/5 text-gray-300 hover:bg-brand-pink hover:text-white transition-all text-xs flex items-center gap-1"
                             title="تعديل هذا العمل"
@@ -871,6 +1242,7 @@ const AdminPanel: React.FC = () => {
                             تعديل
                           </button>
                           <button 
+                            type="button"
                             onClick={() => handleDeleteMedia(item.id)}
                             className="p-1.5 rounded bg-brand-red/10 border border-brand-red/10 text-brand-red hover:bg-brand-red hover:text-white transition-all"
                             title="حذف نهائي"
@@ -878,14 +1250,28 @@ const AdminPanel: React.FC = () => {
                             <Trash2 size={14} />
                           </button>
                         </div>
+                        <div className="flex-1 min-w-0 text-right">
+                          <h4 className="text-white text-sm font-bold truncate leading-tight">{item.title}</h4>
+                          <span className="text-[10px] text-gray-500 font-mono">رقم التعريف: {item.id}</span>
+                          <div className="flex items-center gap-2 justify-end text-[11px] text-gray-400 mt-0.5">
+                            <span className="text-yellow-500 font-bold">{item.rating} ★</span>
+                            <span className="w-1 h-1 rounded-full bg-gray-700" />
+                            <span>{item.year}</span>
+                            <span className="w-1 h-1 rounded-full bg-gray-700" />
+                            <span className="text-brand-pink font-bold">{item.type === MediaType.MOVIE ? 'فيلم' : 'مسلسل'}</span>
+                          </div>
+                        </div>
+                        <div className="w-12 h-16 rounded overflow-hidden flex-shrink-0 bg-gray-900 border border-white/10">
+                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                        </div>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div className="py-12 text-center text-gray-400">
                     <Film className="mx-auto text-gray-600 mb-3" size={32} />
-                    <p className="text-sm">لم تقم بإضافة أي أعمال مخصصة بعد.</p>
-                    <p className="text-xs text-gray-500 mt-1">ابدأ بملء الحقول في النموذج لإضافة عملك الأول!</p>
+                    <p className="text-sm">لم تقم بإضافة أي أعمال مخصصة أو بديلة بعد.</p>
+                    <p className="text-xs text-gray-500 mt-1">ابدأ بملء الحقول في النموذج بالطرف الآخر لإضافة عملك الأول!</p>
                   </div>
                 )}
               </div>
@@ -1198,6 +1584,9 @@ const AdminPanel: React.FC = () => {
               {/* Loop and render block for each active ad slot */}
               {([
                 { key: 'headerAd', name: 'إعلان رأس الصفحة (Header Banner)', desc: 'يظهر في جميع الصفحات تحت القائمة العلوية مباشرة.' },
+                { key: 'homePageAd', name: 'إعلان وسط الصفحة الرئيسية (Homepage Banner)', desc: 'يظهر في منتصف الصفحة الرئيسية بين تصنيفات الأفلام.' },
+                { key: 'sidebarAd', name: 'إعلان القائمة الجانبية (Sidebar Ad)', desc: 'يظهر في صفحات تصنيفات الأفلام بجانب شبكة العرض.' },
+                { key: 'footerAd', name: 'إعلان أسفل الموقع (Footer Banner)', desc: 'يظهر في نهاية جميع صفحات الموقع فوق معلومات الفوتر مباشرة.' },
                 { key: 'detailsPageAd', name: 'إعلان صفحة تفاصيل العمل الفني', desc: 'يظهر في صفحة التفاصيل الفنية فوق زر المشاهدة.' },
                 { key: 'watchPageAd', name: 'إعلان صفحة المشاهدة والتشغيل', desc: 'يظهر مباشرة بجوار أو أسفل مشغل الفيديو وسيرفرات البث.' },
                 { key: 'popunderAd', name: 'إعلان النوافذ المنبثقة التلقائي (Popunder Link)', desc: 'يفتح رابطاً إعلانياً عند النقر في أي مكان في الموقع.' }
