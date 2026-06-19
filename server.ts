@@ -83,21 +83,21 @@ app.get("/api/ads", (req, res) => {
     // We can define multiple ad slots
     headerAd: {
       type: "script", // "script", "image", "html"
-      code: `<div class="w-full flex justify-center items-center py-2 bg-transparent"><div data-cl-spot="2089244"></div></div>`,
+      code: `<script>\n  atOptions = {\n    'key' : '239fe64e711b8fc71eec9f72aa735b94',\n    'format' : 'iframe',\n    'height' : 250,\n    'width' : 300,\n    'params' : {}\n  };\n</script>\n<script src="https://www.highperformanceformat.com/239fe64e711b8fc71eec9f72aa735b94/invoke.js"></script>`,
       imageUrl: "",
       targetUrl: "",
       isActive: true,
     },
     watchPageAd: {
       type: "script",
-      code: `<div class="w-full flex justify-center items-center py-4 bg-transparent"><div data-cl-spot="2089244"></div></div>`,
+      code: `<script>\n  atOptions = {\n    'key' : '239fe64e711b8fc71eec9f72aa735b94',\n    'format' : 'iframe',\n    'height' : 250,\n    'width' : 300,\n    'params' : {}\n  };\n</script>\n<script src="https://www.highperformanceformat.com/239fe64e711b8fc71eec9f72aa735b94/invoke.js"></script>`,
       imageUrl: "",
       targetUrl: "",
       isActive: true,
     },
     detailsPageAd: {
       type: "script",
-      code: `<div class="w-full flex justify-center items-center py-4 bg-transparent"><div data-cl-spot="2089244"></div></div>`,
+      code: `<script>\n  atOptions = {\n    'key' : '239fe64e711b8fc71eec9f72aa735b94',\n    'format' : 'iframe',\n    'height' : 250,\n    'width' : 300,\n    'params' : {}\n  };\n</script>\n<script src="https://www.highperformanceformat.com/239fe64e711b8fc71eec9f72aa735b94/invoke.js"></script>`,
       imageUrl: "",
       targetUrl: "",
       isActive: true,

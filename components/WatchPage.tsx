@@ -308,74 +308,28 @@ const WatchPage: React.FC = () => {
         
         <BannerAd slot="watchPageAd" />
 
-        {/* Download Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Download Component/Iframe */}
-          <div className="lg:col-span-2 bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
-            <div className="p-5 border-b border-white/10 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <Download className="text-brand-pink" size={20} />
-                روابط التحميل المباشرة والسريعة
-              </h3>
-              <span className="text-xs text-gray-400 bg-black/30 px-2 py-1 rounded flex items-center gap-1">
-                <Shield size={10} className="text-green-500" /> سيرفرات آمنة
-              </span>
-            </div>
-            
-            <div className="w-full bg-black/20 text-right">
-              {customServers && customServers.download && customServers.download.length > 0 ? (
-                <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {customServers.download.map((dl, idx) => (
-                    <a
-                      key={idx}
-                      href={dl.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between gap-3 p-4 bg-brand-pink/10 hover:bg-brand-pink/20 border border-brand-pink/25 rounded-xl transition-all cursor-pointer group text-right shadow-lg"
-                    >
-                      <div className="min-w-0">
-                        <span className="text-white font-bold block text-sm">{dl.name}</span>
-                        <span className="text-gray-400 text-[10px] truncate max-w-[200px] block font-mono dir-ltr text-left mt-0.5">{dl.url}</span>
-                      </div>
-                      <div className="w-10 h-10 rounded-lg bg-brand-pink text-white flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                        <Download size={18} />
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              ) : (
-                <iframe
-                  src={downloadUrl}
-                  className="w-full h-[400px]"
-                  frameBorder="0"
-                  title="Download Links"
-                ></iframe>
-              )}
-            </div>
+        {/* Info & Alerts Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="md:col-span-2 bg-white/5 shadow-xl rounded-2xl p-6 border border-white/10">
+            <h4 className="text-white font-bold mb-4 text-right flex items-center justify-end gap-2">
+              <span>قصة العمل</span>
+            </h4>
+            <p className="text-gray-400 text-sm leading-relaxed text-right">
+              {item.description}
+            </p>
           </div>
 
-          {/* Sidebar / Info */}
-          <div className="space-y-6">
-            <div className="bg-gradient-to-br from-brand-red/10 to-brand-purple/10 rounded-2xl p-6 border border-brand-red/20">
-              <h4 className="text-white font-bold mb-3 flex items-center gap-2">
-                <AlertCircle size={18} className="text-brand-red" />
-                تنبيه هام
-              </h4>
-              <p className="text-gray-400 text-sm leading-relaxed mb-4">
-                في حال توقف الفيلم أو المسلسل، يرجى تغيير السيرفر من القائمة أعلاه أو الضغط على زر "تحديث المشغل". ننصح باستخدام السيرفر الأساسي للاستقرار أو VIP للسرعة.
-              </p>
-              <button onClick={handleRefresh} className="w-full py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-white text-sm font-medium transition-colors border border-white/10">
-                إعادة تحميل الصفحة
-              </button>
-            </div>
-            
-             <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                <h4 className="text-white font-bold mb-4">قصة العمل</h4>
-                <p className="text-gray-400 text-sm leading-relaxed">
-                  {item.description}
-                </p>
-             </div>
+          <div className="bg-gradient-to-br from-brand-red/15 to-brand-purple/15 rounded-2xl p-6 border border-brand-red/25 shadow-xl text-right">
+            <h4 className="text-white font-bold mb-3 flex items-center justify-end gap-2">
+              <AlertCircle size={18} className="text-brand-pink" />
+              تنبيه هام
+            </h4>
+            <p className="text-gray-400 text-sm leading-relaxed mb-4">
+              في حال توقف الفيلم أو المسلسل، يرجى تغيير السيرفر من القائمة أعلاه أو الضغط على زر "تحديث المشغل". ننصح باستخدام السيرفر الأساسي للاستقرار أو VIP للسرعة.
+            </p>
+            <button onClick={handleRefresh} className="w-full py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-white text-sm font-medium transition-colors border border-white/10">
+              إعادة تحميل الصفحة
+            </button>
           </div>
         </div>
       </div>

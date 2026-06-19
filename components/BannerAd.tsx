@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { getAdsConfig, AdsConfigData, AdPlaceConfig } from '../api';
 
 interface BannerAdProps {
@@ -7,6 +7,7 @@ interface BannerAdProps {
 
 const BannerAd: React.FC<BannerAdProps> = ({ slot = 'headerAd' }) => {
   const [adConfig, setAdConfig] = useState<AdPlaceConfig | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadAds = async () => {
@@ -28,6 +29,48 @@ const BannerAd: React.FC<BannerAdProps> = ({ slot = 'headerAd' }) => {
     };
   }, [slot]);
 
+  // Execute scripts if it is dynamic code
+  useEffect(() => {
+    if (!containerRef.current || !adConfig || !adConfig.isActive) return;
+    if (adConfig.type !== 'script' && adConfig.type !== 'html') return;
+
+    // Clear old elements from container
+    containerRef.current.innerHTML = '';
+
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(adConfig.code, 'text/html');
+      
+      const scriptElements = Array.from(doc.querySelectorAll('script'));
+      const nonScripts = Array.from(doc.body.childNodes).filter(node => node.nodeName !== 'SCRIPT');
+
+      // Append standard nodes first
+      nonScripts.forEach(node => {
+        containerRef.current?.appendChild(node.cloneNode(true));
+      });
+
+      // Synchronously execute scripts in order
+      scriptElements.forEach(scriptNode => {
+        const script = document.createElement('script');
+        
+        // Copy all attributes
+        Array.from(scriptNode.attributes).forEach(attr => {
+          script.setAttribute(attr.name, attr.value);
+        });
+
+        // Set content if any
+        if (scriptNode.innerHTML) {
+          script.innerHTML = scriptNode.innerHTML;
+        }
+
+        // Append to container to execute
+        containerRef.current?.appendChild(script);
+      });
+    } catch (err) {
+      console.error('Error executing custom ad script:', err);
+    }
+  }, [adConfig]);
+
   if (!adConfig || !adConfig.isActive) {
     return null;
   }
@@ -36,8 +79,8 @@ const BannerAd: React.FC<BannerAdProps> = ({ slot = 'headerAd' }) => {
   if (adConfig.type === 'script' || adConfig.type === 'html') {
     return (
       <div 
-        className="w-full flex justify-center items-center py-4 my-2 overflow-hidden bg-transparent"
-        dangerouslySetInnerHTML={{ __html: adConfig.code }}
+        ref={containerRef}
+        className="w-full flex flex-col justify-center items-center py-4 my-2 overflow-hidden bg-transparent min-h-[100px]"
       />
     );
   }

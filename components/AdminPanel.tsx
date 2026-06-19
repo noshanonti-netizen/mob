@@ -448,7 +448,6 @@ const AdminPanel: React.FC = () => {
               تسجيل الدخول للنظام
             </button>
           </form>
-          <p className="text-center text-xs text-gray-500 mt-6 font-mono">(اسم المستخدم: admin | كلمة المرور: go123)</p>
         </div>
       </div>
     );
