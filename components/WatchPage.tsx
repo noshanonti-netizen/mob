@@ -278,6 +278,7 @@ const WatchPage: React.FC = () => {
               allowFullScreen
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               title={`${item.title} Player`}
+              referrerPolicy="origin"
             ></iframe>
           </div>
           
