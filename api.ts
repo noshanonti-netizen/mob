@@ -163,8 +163,8 @@ export const getAdsConfig = async (): Promise<AdsConfigData | null> => {
   try {
     const cached = localStorage.getItem('aflameco_ads_config');
     
-    // Background refresh
-    fetch('/api/ads')
+    // Background refresh (using promotions route to bypass adblockers)
+    fetch('/api/promotions')
       .then(res => res.json())
       .then(data => {
         if (data) {
@@ -178,7 +178,7 @@ export const getAdsConfig = async (): Promise<AdsConfigData | null> => {
       return JSON.parse(cached);
     }
     
-    const res = await fetch('/api/ads');
+    const res = await fetch('/api/promotions');
     const data = await res.json();
     if (data) {
       localStorage.setItem('aflameco_ads_config', JSON.stringify(data));
@@ -194,7 +194,7 @@ export const saveAdsConfig = async (config: AdsConfigData): Promise<boolean> => 
   try {
     localStorage.setItem('aflameco_ads_config', JSON.stringify(config));
     window.dispatchEvent(new Event('aflameco_ads_updated'));
-    const res = await fetch('/api/ads', {
+    const res = await fetch('/api/promotions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config)

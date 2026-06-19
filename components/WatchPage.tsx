@@ -9,8 +9,9 @@ import BannerAd from './BannerAd';
 const API_TOKEN = 'daab58b91dd26081ea83a8e1';
 
 const SERVERS = [
-  { id: 1, name: 'سيرفر VIP (MultiEmbed)', type: 'MULTIEMBED' },
-  { id: 2, name: 'سيرفر GoDrivePlayer', type: 'GODRIVE' },
+  { id: 1, name: 'سيرفر أساسي (VidSrc Ru)', type: 'VIDSRC_RU' },
+  { id: 2, name: 'سيرفر VIP (MultiEmbed)', type: 'MULTIEMBED' },
+  { id: 3, name: 'سيرفر GoDrivePlayer', type: 'GODRIVE' },
 ];
 
 // Custom Social Icons
@@ -100,20 +101,20 @@ const WatchPage: React.FC = () => {
         .replace(/{episode}/g, episodeNumber);
     }
 
-    // VidSrc Logic (New Documentation)
-    if (activeServer?.type === 'VIDSRC') {
+    // VidSrc Ru Server Selection
+    if (activeServer?.type === 'VIDSRC_RU') {
        if (mediaType === MediaType.MOVIE) {
-         return `https://vidsrc.xyz/embed/movie?tmdb=${id}`;
+         if (item?.imdb_id) {
+           return `https://vidsrc-embed.ru/embed/movie?imdb=${item.imdb_id}`;
+         } else {
+           return `https://vidsrc-embed.ru/embed/movie?tmdb=${id}`;
+         }
        } else {
-         return `https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${seasonNumber}&episode=${episodeNumber}`;
-       }
-    }
-
-    if (activeServer?.type === 'VIDSRC_BACKUP') {
-       if (mediaType === MediaType.MOVIE) {
-         return `https://vidsrc.in/embed/movie?tmdb=${id}`;
-       } else {
-         return `https://vidsrc.in/embed/tv?tmdb=${id}&season=${seasonNumber}&episode=${episodeNumber}`;
+         if (item?.imdb_id) {
+           return `https://vidsrc-embed.ru/embed/tv?imdb=${item.imdb_id}&season=${seasonNumber}&episode=${episodeNumber}`;
+         } else {
+           return `https://vidsrc-embed.ru/embed/tv?tmdb=${id}&season=${seasonNumber}&episode=${episodeNumber}`;
+         }
        }
     }
 

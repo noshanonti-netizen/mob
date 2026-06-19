@@ -17,7 +17,7 @@ if (!fs.existsSync(DATA_DIR)) {
 
 const MEDIA_FILE = path.join(DATA_DIR, "media.json");
 const SERVERS_FILE = path.join(DATA_DIR, "servers.json");
-const ADS_FILE = path.join(DATA_DIR, "ads.json");
+const PROMOTIONS_FILE = path.join(DATA_DIR, "promotions.json");
 
 // Helper to safely read files
 const readJsonFile = (filePath: string, fallback: any) => {
@@ -76,8 +76,8 @@ app.post("/api/custom-servers", (req, res) => {
   }
 });
 
-// 3. Ad Settings
-app.get("/api/ads", (req, res) => {
+// 3. Ad Settings (using promotions route to bypass ad-blockers)
+app.get("/api/promotions", (req, res) => {
   // Return saved ads configuration or default ones
   const defaultAds = {
     // We can define multiple ad slots
@@ -131,14 +131,14 @@ app.get("/api/ads", (req, res) => {
       isActive: false,
     }
   };
-  const ads = readJsonFile(ADS_FILE, defaultAds);
+  const ads = readJsonFile(PROMOTIONS_FILE, defaultAds);
   res.json(ads);
 });
 
-app.post("/api/ads", (req, res) => {
+app.post("/api/promotions", (req, res) => {
   const adsConf = req.body;
   if (adsConf && typeof adsConf === "object") {
-    writeJsonFile(ADS_FILE, adsConf);
+    writeJsonFile(PROMOTIONS_FILE, adsConf);
     res.json({ success: true });
   } else {
     res.status(400).json({ success: false, error: "Invalid data format. Expected object." });
