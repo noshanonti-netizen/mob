@@ -63,9 +63,9 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-white/5 pt-8 text-center text-sm text-gray-500 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p>© 2026 Aflamecoz. جميع الحقوق محفوظة.</p>
-          <p className="flex items-center gap-1">
-            صنع بـ <Heart size={14} className="text-brand-red fill-brand-red animate-pulse" /> في مصر
+          <p>© 2026 Aflamecoz - جميع الحقوق محفوظة. قالب ووردبريس السينمائي الاحترافي المتطور v2.4</p>
+          <p className="flex items-center gap-1 font-medium text-gray-400">
+            تم التطوير بواسطة <span className="text-brand-pink">طاقم افلاميكوز</span> بـ <Heart size={14} className="text-brand-red fill-brand-red animate-pulse inline" /> في مصر
           </p>
         </div>
       </div>

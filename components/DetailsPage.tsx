@@ -179,7 +179,18 @@ const DetailsPage: React.FC<DetailsPageProps> = ({ type }) => {
 
               {/* Info */}
               <div className="flex-1 text-white animate-fadeIn">
-                <h1 className="text-4xl md:text-6xl font-extrabold mb-4 leading-tight">
+                {/* WordPress Breadcrumb */}
+                <div className="flex items-center gap-2 text-xs text-brand-pink mb-3 font-semibold select-none bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 w-fit">
+                  <Link to="/" className="hover:underline text-gray-400">الرئيسية</Link>
+                  <span className="text-gray-600">/</span>
+                  <Link to={type === MediaType.MOVIE ? "/movies" : "/series"} className="hover:underline text-gray-400">
+                    {type === MediaType.MOVIE ? "الأفلام" : "المسلسلات"}
+                  </Link>
+                  <span className="text-gray-600">/</span>
+                  <span className="text-brand-pink truncate max-w-[150px]">{item.title}</span>
+                </div>
+
+                <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight">
                   {item.title}
                 </h1>
                 

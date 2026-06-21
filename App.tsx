@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, Flame, Tv, Sparkles, Activity, Bell, ChevronRight, HelpCircle, Heart, Star, Search, Filter } from 'lucide-react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import MediaRow from './components/MediaRow';
@@ -212,17 +212,180 @@ const HomePage = () => {
   }
 
   return (
-    <main>
+    <main className="bg-brand-darker min-h-screen">
+      {/* Hero Movie Carousel Slider */}
       {heroItems.length > 0 && <Hero items={heroItems} />}
-      <div className="-mt-12 relative z-20 space-y-4">
-        <BannerAd />
-        <MediaRow title="مسلسلات رمضان والعربية الحديثة" items={ramadanItems} />
-        <MediaRow title="أفلام عربية" items={arabicMovies} />
-        <MediaRow title="أفلام أجنبية" items={foreignMovies} />
-        <BannerAd slot="homePageAd" />
-        <MediaRow title="أفلام آسيوية" items={asianMovies} />
-        <MediaRow title="أفلام للكبار فقط (+18)" items={adultMovies} />
-        <MediaRow title="الدراما التركية" items={turkishSeries} />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+        
+        {/* WordPress Dynamic Marquee Announcement Bar */}
+        <div className="bg-gradient-to-r from-brand-red/10 via-brand-pink/5 to-transparent border-r-4 border-brand-red p-3.5 rounded-xl mb-8 flex flex-col md:flex-row items-center justify-between gap-4 shadow-lg backdrop-blur-sm ring-1 ring-white/5">
+          <div className="flex items-center gap-3">
+            <span className="flex h-3 w-3 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-pink opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-brand-red"></span>
+            </span>
+            <div className="text-right">
+              <span className="text-xs text-brand-pink font-bold block md:inline md:ml-2">شريط أخبار المنصة [WordPress Portal Feed] :</span>
+              <span className="text-sm text-gray-200">مرحباً بكم في الإطلاق الرسمي المطور لقالب افلاميكوز ووردبريس v2.4 السينمائي الشامل. مدمج مع مشغلات بث ومحرك تصفية متكامل وسيرفرات سريعة جداً!</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 select-none">
+            <Sparkles size={14} className="text-yellow-400 animate-pulse" />
+            <span>الإصدارالسينمائي v2.4</span>
+          </div>
+        </div>
+
+        {/* Master WordPress Layout Grid (RTL: Sidebar Left / Content Right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+          
+          {/* Main Grid: Rows of Film & TV Sections (Col-Span 3 on Right) */}
+          <div className="lg:col-span-3 space-y-4">
+            <BannerAd />
+            <MediaRow title="مسلسلات رمضان والعربية الحديثة" items={ramadanItems} />
+            <MediaRow title="أفلام عربية" items={arabicMovies} />
+            <MediaRow title="أفلام أجنبية" items={foreignMovies} />
+            <BannerAd slot="homePageAd" />
+            <MediaRow title="أفلام آسيوية" items={asianMovies} />
+            <MediaRow title="أفلام للكبار فقط (+18)" items={adultMovies} />
+            <MediaRow title="الدراما التركية" items={turkishSeries} />
+          </div>
+
+          {/* Sidebar widget Panel: Left Sidebar (Col-Span 1 on Left) */}
+          <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+            
+            {/* Widget 1: Dynamic Search Filter Widget */}
+            <div className="bg-gradient-to-br from-white/5 to-black/30 border border-white/5 rounded-2xl p-5 shadow-xl">
+              <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-3">
+                <Filter size={18} className="text-brand-pink" />
+                <h3 className="text-base font-bold text-white">فلتر التصفح السريع</h3>
+              </div>
+              <p className="text-xs text-gray-400 mb-4 leading-relaxed">
+                استخدم وسوم الفلترة الفورية للتنقل السريع بين ملفات الأرشيف ومحرك البحث للقالب السينمائي:
+              </p>
+              
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <a href="/ramadan" className="px-3 py-2 bg-white/5 hover:bg-brand-red/25 border border-white/10 hover:border-brand-red hover:text-white rounded-xl text-xs text-gray-300 font-medium transition-all">
+                  🌙 رمضان 2026
+                </a>
+                <a href="/movies" className="px-3 py-2 bg-white/5 hover:bg-brand-pink/20 border border-white/10 hover:border-brand-pink hover:text-white rounded-xl text-xs text-gray-300 font-medium transition-all">
+                  🎬 أحدث الأفلام
+                </a>
+                <a href="/series" className="px-3 py-2 bg-white/5 hover:bg-brand-purple/20 border border-white/10 hover:border-brand-purple hover:text-white rounded-xl text-xs text-gray-300 font-medium transition-all">
+                  📺 أحدث المسلسلات
+                </a>
+                <a href="/egyptian" className="px-3 py-2 bg-white/5 hover:bg-yellow-500/20 border border-white/10 hover:border-yellow-500 hover:text-white rounded-xl text-xs text-gray-300 font-medium transition-all">
+                  🇪🇬 أفلام مصرية
+                </a>
+                <a href="/movies/foreign" className="px-3 py-2 bg-white/5 hover:bg-blue-500/25 border border-white/10 hover:border-blue-500 hover:text-white rounded-xl text-xs text-gray-300 font-medium transition-all">
+                  🌐 أفلام أجنبية
+                </a>
+                <a href="/series/turkish" className="px-3 py-2 bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500 hover:text-white rounded-xl text-xs text-gray-300 font-medium transition-all">
+                  🕌 دراما تركية
+                </a>
+              </div>
+            </div>
+
+            {/* Widget 2: WordPress Simulated Platform Stats (Highly standard for Arabic WP Themes) */}
+            <div className="bg-gradient-to-br from-white/5 to-black/30 border border-white/5 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-24 h-24 bg-brand-pink/5 rounded-full blur-2xl pointer-events-none"></div>
+              
+              <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+                <div className="flex items-center gap-2">
+                  <Activity size={18} className="text-brand-red animate-pulse" />
+                  <h3 className="text-base font-bold text-white">إحصائيات القالب والمنصة</h3>
+                </div>
+                <div className="flex items-center gap-1 text-[10px] bg-red-500/20 text-brand-pink px-2 py-0.5 rounded-full border border-brand-red/30 select-none">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-red animate-ping" />
+                  <span>مباشر</span>
+                </div>
+              </div>
+              
+              <div className="space-y-3.5 text-xs text-gray-300">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">إسم القالب المشغل:</span>
+                  <span className="font-semibold text-white">افلاميكوز ووردبريس v2.4</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">مجموع مواد الأرشيف:</span>
+                  <span className="font-semibold text-brand-pink font-mono">+12,410 عمل</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">عدد سيرفرات المشاهدة:</span>
+                  <span className="font-semibold text-emerald-400">3 سيرفرات سريعة</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">المشاهدات اليومية للموقع:</span>
+                  <span className="font-semibold text-white font-mono">412,500 زيارة</span>
+                </div>
+                <div className="flex items-center justify-between pt-1 border-t border-white/5">
+                  <span className="text-gray-400 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block"></span>
+                    المتصلون بالبث الآن:
+                  </span>
+                  <span className="font-bold text-emerald-400 font-mono">3,412 زائر</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Widget 3: Trending List (WordPress Popular Posts Sidebar Widget) */}
+            <div className="bg-gradient-to-br from-white/5 to-black/30 border border-white/5 rounded-2xl p-5 shadow-xl">
+              <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-3">
+                <Flame size={18} className="text-yellow-400 animate-bounce" />
+                <h3 className="text-base font-bold text-white">رائج ومميز اليوم</h3>
+              </div>
+              
+              <div className="space-y-4">
+                {ramadanItems.slice(0, 4).map((item, index) => (
+                  <a 
+                    key={item.id} 
+                    href={`/series/${item.id}`}
+                    className="flex gap-3 hover:bg-white/5 p-1 px-2 rounded-xl transition-all duration-300 group"
+                  >
+                    {/* Rank indicator */}
+                    <div className="flex items-center justify-center font-bold text-sm text-gray-500 group-hover:text-brand-pink w-4 select-none font-mono">
+                      {index + 1}
+                    </div>
+                    {/* Thumbnail */}
+                    <div className="w-10 h-14 rounded-lg overflow-hidden bg-gray-800 flex-shrink-0 border border-white/10 group-hover:border-brand-pink transition-colors">
+                      <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    </div>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <h4 className="text-xs font-bold text-white truncate group-hover:text-brand-pink transition-colors">
+                        {item.title}
+                      </h4>
+                      <div className="flex items-center gap-2 text-[10px] text-gray-400 mt-1">
+                        <span>{item.year}</span>
+                        <span className="flex items-center gap-0.5 text-yellow-400">
+                          <Star size={8} fill="currentColor" /> {item.rating}
+                        </span>
+                        <span className="px-1 bg-white/5 rounded text-[8px] border border-white/5 text-gray-400">رمضان 2026</span>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Widget 4: Admin / Warning & Feedback Box */}
+            <div className="bg-gradient-to-br from-brand-red/5 to-brand-purple/5 border border-brand-red/20 rounded-2xl p-5 shadow-xl">
+              <div className="flex items-center gap-2 mb-3">
+                <HelpCircle size={18} className="text-brand-red" />
+                <h3 className="text-sm font-bold text-white">هل تواجه مشكلة في البث؟</h3>
+              </div>
+              <p className="text-xs text-gray-300 leading-relaxed space-y-2">
+                <span>تتميز واجهتنا المخصصة لكود ووردبريس بمرونتها التامة. إذا تفاجأت بأي عطل في سيرفر البث أو سيرفر التحميل، يرجى القيام بـ:</span>
+                <span className="block mt-2 font-semibold text-brand-pink">1. النقر على تنشيط الصفحة أو إعادة المحاولة.</span>
+                <span className="block font-semibold text-brand-pink">2. تبديل مشغلات سيرفرات VIP المرفقة في صفحة المشاهدة.</span>
+                <span className="block font-semibold text-gray-400">نتمنى لكم وقت ممتع ومسلي!</span>
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
     </main>
   );
