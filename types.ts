@@ -55,4 +55,5 @@ export interface MediaItem {
 export interface SectionProps {
   title: string;
   items: MediaItem[];
+  viewAllPath?: string;
 }

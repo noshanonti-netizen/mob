@@ -471,6 +471,9 @@ const DetailsPage: React.FC<DetailsPageProps> = ({ type }) => {
           </div>
         )}
 
+        {/* Ad slot between Cast and Similar */}
+        <BannerAd slot="homePageAd" />
+
         {/* Similar Content */}
         {item.similar && item.similar.length > 0 && (
           <div className="mb-12">

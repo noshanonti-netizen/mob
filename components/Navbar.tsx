@@ -70,7 +70,6 @@ const Navbar: React.FC = () => {
     { name: 'أفلام', path: '/movies', icon: <Play size={18} /> },
     { name: 'مسلسلات', path: '/series', icon: <Monitor size={18} /> },
     { name: 'أفلام مصرية', path: '/egyptian', icon: <Film size={18} /> },
-    { name: 'لوحة التحكم', path: '/admin', icon: <Settings size={18} /> },
   ];
 
   const categoryLinks = [

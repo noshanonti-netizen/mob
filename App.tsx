@@ -242,13 +242,13 @@ const HomePage = () => {
           {/* Main Grid: Rows of Film & TV Sections (Col-Span 3 on Right) */}
           <div className="lg:col-span-3 space-y-4">
             <BannerAd />
-            <MediaRow title="مسلسلات رمضان والعربية الحديثة" items={ramadanItems} />
-            <MediaRow title="أفلام عربية" items={arabicMovies} />
-            <MediaRow title="أفلام أجنبية" items={foreignMovies} />
+            <MediaRow title="مسلسلات رمضان والعربية الحديثة" items={ramadanItems} viewAllPath="/ramadan" />
+            <MediaRow title="أفلام عربية" items={arabicMovies} viewAllPath="/movies/arabic" />
+            <MediaRow title="أفلام أجنبية" items={foreignMovies} viewAllPath="/movies/foreign" />
             <BannerAd slot="homePageAd" />
-            <MediaRow title="أفلام آسيوية" items={asianMovies} />
-            <MediaRow title="أفلام للكبار فقط (+18)" items={adultMovies} />
-            <MediaRow title="الدراما التركية" items={turkishSeries} />
+            <MediaRow title="أفلام آسيوية" items={asianMovies} viewAllPath="/movies/asian" />
+            <MediaRow title="أفلام للكبار فقط (+18)" items={adultMovies} viewAllPath="/movies/adult" />
+            <MediaRow title="الدراما التركية" items={turkishSeries} viewAllPath="/series/turkish" />
           </div>
 
           {/* Sidebar widget Panel: Left Sidebar (Col-Span 1 on Left) */}

@@ -1,9 +1,10 @@
 import React, { useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { MediaItem, SectionProps } from '../types';
 import MediaCard from './MediaCard';
 
-const MediaRow: React.FC<SectionProps> = ({ title, items }) => {
+const MediaRow: React.FC<SectionProps> = ({ title, items, viewAllPath }) => {
   const rowRef = useRef<HTMLDivElement>(null);
 
   // If no items, do not render the section at all
@@ -25,7 +26,16 @@ const MediaRow: React.FC<SectionProps> = ({ title, items }) => {
         <h2 className="text-2xl md:text-3xl font-bold text-white relative z-10 border-r-4 border-brand-red pr-4">
           {title}
         </h2>
-        <button className="text-sm text-brand-pink hover:text-white transition-colors">عرض الكل</button>
+        {viewAllPath ? (
+          <Link 
+            to={viewAllPath} 
+            className="text-sm font-bold text-brand-pink hover:text-white transition-all bg-white/5 hover:bg-brand-pink/10 border border-white/5 hover:border-brand-pink/30 px-3.5 py-1.5 rounded-lg active:scale-95 shadow-md shadow-black/30"
+          >
+            عرض الكل
+          </Link>
+        ) : (
+          <button className="text-sm font-bold text-brand-pink hover:text-white transition-colors">عرض الكل</button>
+        )}
       </div>
 
       <div className="relative">

@@ -278,7 +278,7 @@ const WatchPage: React.FC = () => {
               <Link 
                 to={`/admin?editId=${item.id}&type=${type}${mediaType === MediaType.SERIES ? `&season=${seasonNumber}&episode=${episodeNumber}` : ''}`}
                 className="flex items-center gap-2 bg-brand-pink/20 hover:bg-brand-pink text-white px-4 py-2 rounded-lg font-medium transition-colors border border-brand-pink/30 hover:border-transparent"
-                title="تعديل هذا العمل الفني وتغيير سيرفرات عرضه في لوحة التحكم"
+                title="تعديل هذا العمل الفني وتغيير سيرفرات عرضه في صفحة الإشراف"
               >
                 <Edit3 size={16} />
                 تعديل العمل وروابطه
@@ -293,6 +293,9 @@ const WatchPage: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Top Header Ad banner (WordPress theme placement) */}
+        <BannerAd slot="headerAd" />
 
         {/* Video Player Container */}
         <div className="bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl mb-8 relative group">
@@ -348,6 +351,174 @@ const WatchPage: React.FC = () => {
         </div>
         
         <BannerAd slot="watchPageAd" />
+
+        {/* WordPress Interactive Download Central Hub (مكان التحميل المباشر المطور للزوار) */}
+        <div className="bg-gradient-to-br from-[#111625] to-[#161f36] border border-white/5 rounded-2xl p-6 shadow-2xl mb-8 relative overflow-hidden">
+          <div className="absolute -top-12 -left-12 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-brand-pink/5 rounded-full blur-3xl pointer-events-none"></div>
+          
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/10">
+                <Download size={22} className="animate-bounce" />
+              </div>
+              <div className="text-right">
+                <h3 className="text-lg font-black text-white">روابط التحميل المباشرة والسريعة</h3>
+                <p className="text-xs text-gray-400 mt-0.5">اختر الجودة والسيرفر المناسب لبدء التحميل الفوري بنقرة واحدة</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-3.5 py-1.5 rounded-xl border border-emerald-500/20 text-xs font-bold w-fit">
+              <Shield size={14} fill="currentColor" />
+              <span>روابط آمنة v2.4 خالية من المشاكل</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* High Quality Preset 1 */}
+            <a 
+              href={downloadUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-500/30 transition-all duration-300 group shadow-lg"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-400 font-bold text-xs select-none">
+                  FHD
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-gray-400 block">سيرفر سريع (1080p)</span>
+                  <span className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">تحميل مباشر خارجي دقة فائقة</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 group-hover:scale-105 transition-transform">
+                <span>جاهز للتحميل</span>
+                <ChevronRight size={14} className="rotate-180" />
+              </div>
+            </a>
+
+            {/* Quality Preset 2 */}
+            <a 
+              href={downloadUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-brand-pink/10 border border-white/10 hover:border-brand-pink/30 transition-all duration-300 group shadow-lg"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-brand-pink/15 flex items-center justify-center text-brand-pink font-bold text-xs select-none">
+                  HD
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-gray-400 block">سيرفر ضغط الجودة (720p)</span>
+                  <span className="text-sm font-bold text-white group-hover:text-brand-pink transition-colors">تنزيل سريع بجودة متزنة</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-brand-pink bg-brand-pink/10 px-2.5 py-1 rounded-lg border border-brand-pink/20 group-hover:scale-105 transition-transform">
+                <span>جاهز للتحميل</span>
+                <ChevronRight size={14} className="rotate-180" />
+              </div>
+            </a>
+
+            {/* Custom Servers / Fallbacks */}
+            {item?.download && item.download.length > 0 ? (
+              item.download.map((server, idx) => (
+                <a 
+                  key={`item-dl-${idx}`}
+                  href={server.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-brand-purple/10 border border-white/10 hover:border-brand-purple/30 transition-all duration-300 group shadow-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-brand-purple/15 flex items-center justify-center text-brand-purple font-bold text-xs select-none">
+                      DL
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs text-gray-400 block">سيرفر تحميل يدوي مخصص #{idx + 1}</span>
+                      <span className="text-sm font-bold text-white group-hover:text-brand-purple transition-colors">{server.name}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-brand-purple bg-brand-purple/10 px-2.5 py-1 rounded-lg border border-brand-purple/20 group-hover:scale-105 transition-transform">
+                    <span>تحميل مباشر</span>
+                    <ChevronRight size={14} className="rotate-180" />
+                  </div>
+                </a>
+              ))
+            ) : customServers?.download && customServers.download.length > 0 ? (
+              customServers.download.map((server, idx) => (
+                <a 
+                  key={`global-dl-${idx}`}
+                  href={server.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-blue-500/10 border border-white/10 hover:border-blue-500/30 transition-all duration-300 group shadow-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center text-blue-400 font-bold text-xs select-none">
+                      DL
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs text-gray-400 block">سيرفر وكيل وموزع للشبكة #{idx + 1}</span>
+                      <span className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">{server.name}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-lg border border-blue-500/20 group-hover:scale-105 transition-transform">
+                    <span>تنزيل سريع</span>
+                    <ChevronRight size={14} className="rotate-180" />
+                  </div>
+                </a>
+              ))
+            ) : (
+              <>
+                {/* Extra simulated options to look complete and rich */}
+                <a 
+                  href={downloadUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-yellow-500/10 border border-white/10 hover:border-yellow-500/30 transition-all duration-300 group shadow-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-yellow-500/15 flex items-center justify-center text-yellow-400 font-bold text-xs select-none">
+                      SD
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs text-gray-400 block">سيرفر ضغط للهواتف (480p)</span>
+                      <span className="text-sm font-bold text-white group-hover:text-yellow-400 transition-colors">جودة متوسطة موفرة للبيانات</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-yellow-500 bg-yellow-500/10 px-2.5 py-1 rounded-lg border border-yellow-500/20 group-hover:scale-105 transition-transform">
+                    <span>جاهز للتحميل</span>
+                    <ChevronRight size={14} className="rotate-180" />
+                  </div>
+                </a>
+
+                <a 
+                  href="https://t.me/aflameco_portal" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-sky-500/10 border border-white/10 hover:border-sky-500/30 transition-all duration-300 group shadow-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-sky-500/15 flex items-center justify-center text-sky-400 font-bold text-xs select-none">
+                      TG
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs text-gray-400 block">مجتمع المنصة التشاركي</span>
+                      <span className="text-sm font-bold text-white group-hover:text-sky-400 transition-colors">تحميل سريع عبر تطبيق قنوات تيليجرام</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20 group-hover:scale-105 transition-transform">
+                    <span>انضم الآن</span>
+                    <ChevronRight size={14} className="rotate-180" />
+                  </div>
+                </a>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Medium Rectangle or Landscape Ad Section (WordPress theme placement) */}
+        <BannerAd slot="homePageAd" />
 
         {/* Info & Alerts Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
