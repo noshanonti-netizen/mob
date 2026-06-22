@@ -57,7 +57,7 @@ const WatchPage: React.FC = () => {
   
   const [item, setItem] = useState<MediaItem | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeServerId, setActiveServerId] = useState(1); // Default to VidSrc (ID: 1)
+  const [activeServerId, setActiveServerId] = useState(100); // Default to Custom Servers
   const [refreshCount, setRefreshCount] = useState(0);
   const [customServers, setCustomServers] = useState<CustomServersData | null>(null);
 
@@ -81,7 +81,7 @@ const WatchPage: React.FC = () => {
         url: srv.url
       }));
     }
-    return SERVERS;
+    return []; // Stop fallback automatic watch servers - only show custom admin ones
   };
 
   // Construct Download URL (Keep using URPlayer for downloads as it provides direct links)
@@ -169,7 +169,7 @@ const WatchPage: React.FC = () => {
       if (srv && srv.watch.length > 0) {
         setActiveServerId(100);
       } else {
-        setActiveServerId(1);
+        setActiveServerId(0); // No custom server exists
       }
     }
   }, [id, type, seasonNumber, episodeNumber]);
@@ -299,18 +299,39 @@ const WatchPage: React.FC = () => {
 
         {/* Video Player Container */}
         <div className="bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl mb-8 relative group">
-          <div className="aspect-video w-full relative">
-            <iframe 
-              // Key ensures iframe reloads when URL, server, or refresh button changes
-              key={`${activeServerId}-${refreshCount}-${seasonNumber}-${episodeNumber}`}
-              src={embedUrl}
-              className="w-full h-full"
-              frameBorder="0"
-              allowFullScreen
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              title={`${item.title} Player`}
-              referrerPolicy="origin"
-            ></iframe>
+          <div className="aspect-video w-full relative bg-[#0a0d14]">
+            {embedUrl ? (
+              <iframe 
+                // Key ensures iframe reloads when URL, server, or refresh button changes
+                key={`${activeServerId}-${refreshCount}-${seasonNumber}-${episodeNumber}`}
+                src={embedUrl}
+                className="w-full h-full"
+                frameBorder="0"
+                allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                title={`${item.title} Player`}
+                referrerPolicy="origin"
+              ></iframe>
+            ) : (
+              <div className="absolute inset-x-0 inset-y-0 flex flex-col items-center justify-center p-6 text-center select-none bg-gradient-to-br from-[#0c101b] to-black">
+                <div className="w-16 h-16 rounded-full bg-brand-pink/10 flex items-center justify-center text-brand-pink mb-4 animate-pulse">
+                  <Play size={32} fill="currentColor" className="mr-[-2px]" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">سيرفرات المشاهدة غير متوفرة حالياً</h3>
+                <p className="text-sm text-gray-400 max-w-md mb-6 leading-relaxed">
+                  لم يتم إضافة سيرفرات مشاهدة مخصصة لهذا الإصدار بعد. يرجى إضافة روابط سيرفرات البث من خلال صفحة الإشراف لعرضها للزوار.
+                </p>
+                {sessionStorage.getItem('aflameco_admin_auth') === 'true' && (
+                  <Link 
+                    to={`/admin?editId=${item.id}&type=${type}${mediaType === MediaType.SERIES ? `&season=${seasonNumber}&episode=${episodeNumber}` : ''}`}
+                    className="flex items-center gap-2 bg-brand-pink hover:bg-brand-pink/90 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg active:scale-95 text-sm"
+                  >
+                    <Edit3 size={18} />
+                    إضافة سيرفر مشاهدة جديد الآن
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
           
           {/* Server Selection Bar */}
@@ -321,27 +342,29 @@ const WatchPage: React.FC = () => {
                   <Server size={18} />
                   <span className="text-sm font-medium whitespace-nowrap">سيرفرات المشاهدة:</span>
                 </div>
-                {getServersList().map((server) => (
-                  <button
-                    key={server.id}
-                    onClick={() => handleServerChange(server.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                      activeServerId === server.id
-                        ? 'bg-brand-pink text-white shadow-[0_0_10px_rgba(255,79,156,0.3)]'
-                        : 'bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white'
-                    }`}
-                  >
-                    {server.name}
-                    {server.type === 'VIP' && (
-                      <span className="bg-yellow-500/20 text-yellow-400 text-[10px] px-1.5 rounded ml-1 border border-yellow-500/20">VIP</span>
-                    )}
-                  </button>
-                ))}
+                {getServersList().length > 0 ? (
+                  getServersList().map((server) => (
+                    <button
+                      key={server.id}
+                      onClick={() => handleServerChange(server.id)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                        activeServerId === server.id
+                          ? 'bg-brand-pink text-white shadow-[0_0_10px_rgba(255,79,156,0.3)]'
+                          : 'bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      {server.name}
+                    </button>
+                  ))
+                ) : (
+                  <span className="text-xs text-gray-400 italic">لا توجد سيرفرات مضافة حالياً لهذا العمل</span>
+                )}
               </div>
 
               <button 
                 onClick={handleRefresh}
                 className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+                disabled={!embedUrl}
               >
                 <RefreshCw size={16} />
                 تحديث المشغل
